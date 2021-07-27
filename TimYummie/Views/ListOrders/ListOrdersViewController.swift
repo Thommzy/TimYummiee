@@ -6,25 +6,38 @@
 //
 
 import UIKit
+import ProgressHUD
 
 class ListOrdersViewController: UIViewController {
     
     @IBOutlet weak var listOrdersTableView: UITableView!
     
-    var orders: [Order] = [
-        .init(id: "id1", name: "Obeisun Timothy", dish:
-                .init(id: "id3", name: "Beans and Garri", description: "This is the best i have ever tasted", image: "https://picsum.photos/100/200", calories: 782)),
-        .init(id: "id1", name: "UgoChukwu Val", dish:
-                .init(id: "id3", name: "Rice and Stew", description: "This is the best i have ever tasted", image: "https://picsum.photos/100/200", calories: 782)),
-        .init(id: "id1", name: "Folahanmi Kolawole", dish:
-                .init(id: "id3", name: "Moin Moin", description: "This is the best i have ever tasted", image: "https://picsum.photos/100/200", calories: 782))
-    ]
+    var orders: [Order] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         title = "Orders"
         registerCells()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        setup()
+    }
+    
+    func setup() {
+        ProgressHUD.show()
+        NetworkService.shared.fetchOrders { [weak self] (result) in
+            switch result {
+            case .success(let orders):
+                ProgressHUD.dismiss()
+                self?.orders = orders
+                self?.listOrdersTableView.reloadData()
+            case .failure(let error):
+                ProgressHUD.showError(error.localizedDescription)
+            }
+        }
     }
     
     private func registerCells() {
@@ -42,7 +55,7 @@ extension ListOrdersViewController: UITableViewDelegate, UITableViewDataSource {
         cell.setup(order: orders[indexPath.row])
         return cell
     }
-     
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let controller = DishDetailViewController.instantiate()
         controller.dish = orders[indexPath.row].dish
