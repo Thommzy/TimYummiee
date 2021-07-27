@@ -1,0 +1,6 @@
+framework module Pods_TimYummie {
+  umbrella header "Pods-TimYummie-umbrella.h"
+
+  export *
+  module * { export * }
+}
